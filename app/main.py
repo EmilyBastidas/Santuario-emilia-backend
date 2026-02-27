@@ -3,9 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from .database import create_db_and_tables  # ← agrega esta importación
 
 app = FastAPI(
-    title="Santuario Emilia API",
-    description="Backend para citas veterinarias y donaciones del Santuario Emilia",
-    version="0.1.0"
+    title="Santuario Emilia API 🐾",
+    description="Backend para donaciones y más en el Santuario Emilia ❤️",
+    version="0.1.0",
+    swagger_ui_parameters={
+        "syntaxHighlight.theme": "obsidian"          # Tema oscuro muy lindo
+        # Otras opciones bonitas: "monokai", "dracula", "arta", "nord", "tomorrow-night"
+    }
 )
 
 app.add_middleware(

@@ -18,4 +18,16 @@ Desarrollada para donación a refugios/protectoras de animales sin fines de lucr
 4. Copia `.env.example` a `.env` y configura
 5. `uvicorn app.main:app --reload`
 
+## Levantar el servidor (uvicorn)
+
+1. `source venv/bin/activate`
+2. `uvicorn app.main:app --reload`
+
+# documentación automática de FastAPI, que usa Swagger UI
+
+`http://127.0.0.1:8000/docs`
+
+# reiniciar el servidor
+
+`(uvicorn app.main:app --reload)`
 Proyecto hecho con amor para ayudar a los animalitos
