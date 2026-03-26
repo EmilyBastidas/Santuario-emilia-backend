@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 
 from .database import create_db_and_tables, get_session
-from app.models import UrgentCase, UrgentCaseBase
+from app.models import UrgentCase, UrgentCaseBase, Donation, DonationBase
+
 
 app = FastAPI(
     title="Santuario Emilia API 🐾",
@@ -49,15 +50,18 @@ def get_all_cases(session: Session = Depends(get_session)):
     
     result = []
     for case in cases:
-        raised = 0   # Por ahora es 0 porque aún no tenemos donaciones
-        percentage = round((raised / case.goal) * 100) if case.goal > 0 else 0
+        # Calcular el total recaudado para este caso
+        raised_query = select(func.sum(Donation.amount)).where(Donation.urgent_case_id == case.id)
+        raised = session.exec(raised_query).one() or 0.0
+        
+        percentage = round((raised / case.goal) * 100) if case.goal and case.goal > 0 else 0
         
         result.append({
             "petName": case.pet_name,
             "status": case.status,
-            "imageUrl": case.imagen,           # mapeamos "imagen" → "imageUrl"
+            "imageUrl": case.imagen,
             "description": case.description,
-            "raised": raised,
+            "raised": int(raised),
             "goal": int(case.goal),
             "percentage": percentage
         })
@@ -81,3 +85,42 @@ def status():
         "status": "running",
         "message": "Backend del Santuario Emilia funcionando correctamente 🐶❤️"
     }
+
+    # ==================== CRUD de Donations ====================
+
+@app.post("/donations/")
+def create_donation(donation: DonationBase, session: Session = Depends(get_session)):
+    db_donation = Donation.from_orm(donation)
+    session.add(db_donation)
+    session.commit()
+    session.refresh(db_donation)
+    return db_donation
+
+
+@app.get("/donations/")
+def get_all_donations(session: Session = Depends(get_session)):
+    donations = session.exec(select(Donation)).all()
+    return donations
+
+@app.put("/donations/{donation_id}/assign/{case_id}")
+def assign_donation_to_case(donation_id: int, case_id: int, session: Session = Depends(get_session)):
+    donation = session.get(Donation, donation_id)
+    if not donation:
+        raise HTTPException(404, "Donación no encontrada")
+    
+    donation.urgent_case_id = case_id
+    session.add(donation)
+    session.commit()
+    session.refresh(donation)
+    
+    return {"mensaje": f"Donación {donation_id} asignada al caso {case_id}"}
+
+@app.delete("/donations/{donation_id}")
+def delete_donation(donation_id: int, session: Session = Depends(get_session)):
+    donation = session.get(Donation, donation_id)
+    if not donation:
+        raise HTTPException(status_code=404, detail="Donación no encontrada")
+    
+    session.delete(donation)
+    session.commit()
+    return {"mensaje": f"Donación {donation_id} eliminada correctamente"}
