@@ -3,12 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select, func
 
 from .database import create_db_and_tables, get_session
-from app.models import UrgentCase, UrgentCaseBase, Donation, DonationBase
+from .models import UrgentCase, UrgentCaseBase, Donation, DonationBase
 
 
 app = FastAPI(
     title="Santuario Emilia API 🐾",
-    description="Backend para donaciones y más en el Santuario Emilia ❤️",
+    description="Backend para donaciones y más en el Santuario Emilia ",
     version="0.1.0",
     swagger_ui_parameters={
         "syntaxHighlight.theme": "obsidian"
@@ -17,13 +17,13 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"], 
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  
+    allow_headers=["*"],  
 )
 
-# Crea las tablas al iniciar el servidor
+# Creo las tablas al iniciar el servidor
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
@@ -33,7 +33,7 @@ def on_startup():
 def ping():
     return {"status": "ok", "message": "Santuario Emilia backend vivo 🐾🐶"}
 
-# ==================== CRUD de Urgent Cases ====================
+#CRUD de Urgent Cases
 
 @app.post("/urgent-cases/")
 def create_case(case: UrgentCaseBase, session: Session = Depends(get_session)):
@@ -86,7 +86,7 @@ def status():
         "message": "Backend del Santuario Emilia funcionando correctamente 🐶❤️"
     }
 
-    # ==================== CRUD de Donations ====================
+#CRUD de donations
 
 @app.post("/donations/")
 def create_donation(donation: DonationBase, session: Session = Depends(get_session)):
