@@ -55,8 +55,7 @@ class GatitoBase(SQLModel):
     portador_de: str = Field(default="Sano") # VIF, FeLV, Mycoplasma
     
     # Historias 
-    historia_llegada: str = Field(..., max_length=2000)
-    anamnesis_remota: Optional[str] = Field(None, max_length=2000)
+    historia_llegada: Optional[str] = Field(default="Sin información de rescate", max_length=2000)
     caracter: Optional[str] = Field(None, max_length=1000)
     ubicacion_actual: Optional[str] = Field(None)
     
