@@ -35,4 +35,38 @@ class Donation(DonationBase, table=True):
     
     # Relación para poder acceder desde el caso
     urgent_case: Optional["UrgentCase"] = Relationship(back_populates="donations")
+
+#Modelo Gatito (Gestión Médica)
+
+class GatitoBase(SQLModel):
+    nombre: str = Field(..., min_length=1, max_length=100)
+    especie: str = Field(default="Felino")
+    sexo: str = Field(...) # Macho / Hembra
+    fecha_nacimiento: Optional[str] = Field(None) 
+    edad_aprox: Optional[str] = Field(None)
+    color: Optional[str] = Field(None)
     
+    # Ficha Médica 
+    esterilizado: str = Field(default="Desconocido") 
+    vacunacion_anual: str = Field(default="No")
+    desparasitacion_interna: Optional[str] = Field(None) 
+    desparasitacion_externa: Optional[str] = Field(None)
+    retrovirales: str = Field(default="Desconocido") # Negativo, Positivo, etc.
+    portador_de: str = Field(default="Sano") # VIF, FeLV, Mycoplasma
+    
+    # Historias 
+    historia_llegada: str = Field(..., max_length=2000)
+    anamnesis_remota: Optional[str] = Field(None, max_length=2000)
+    caracter: Optional[str] = Field(None, max_length=1000)
+    ubicacion_actual: Optional[str] = Field(None)
+    
+    # Links y Multimedia
+    foto_principal: Optional[str] = Field(None) # URL de Cloudinary
+    link_nube: Optional[str] = Field(None) # URL del Drive
+    
+    # Control de vista
+    estatus: str = Field(..., description="Adoptable, En tratamiento, Especial")
+
+class Gatito(GatitoBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)

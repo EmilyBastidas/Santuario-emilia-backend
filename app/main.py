@@ -4,7 +4,7 @@ from sqlmodel import Session, select, func
 
 from .database import create_db_and_tables, get_session
 from .models import UrgentCase, UrgentCaseBase, Donation, DonationBase
-
+from .models import Gatito, GatitoBase
 
 app = FastAPI(
     title="Santuario Emilia API 🐾",
@@ -85,7 +85,52 @@ def status():
         "status": "running",
         "message": "Backend del Santuario Emilia funcionando correctamente 🐶❤️"
     }
+#ruta para crear un gatito (gestión médica)
 
+@app.post("/gatitos/", response_model=Gatito)
+def create_gatito(gatito: GatitoBase, session: Session = Depends(get_session)):
+    db_gatito = Gatito.from_orm(gatito)
+    session.add(db_gatito)
+    session.commit()
+    session.refresh(db_gatito)
+    return db_gatito
+
+# ruta para ver todos los gatitos (Espectador)
+
+@app.get("/gatitos/", response_model=List[Gatito])
+def get_all_gatitos(session: Session = Depends(get_session)):
+    gatitos = session.exec(select(Gatito)).all()
+    return gatitos
+
+# modificar un gatito (Para actualizar salud, link de nube o estatus de adopción)
+@app.put("/gatitos/{gatito_id}", response_model=Gatito)
+def update_gatito(gatito_id: int, datos_actualizados: GatitoBase, session: Session = Depends(get_session)):
+    # Buscamos al gatito en la DB
+    db_gatito = session.get(Gatito, gatito_id)
+    if not db_gatito:
+        raise HTTPException(status_code=404, detail="Gatito no encontrado")
+    
+    # Extraemos los datos nuevos y actualizamos el objeto
+    datos_dict = datos_actualizados.dict(exclude_unset=True)
+    for key, value in datos_dict.items():
+        setattr(db_gatito, key, value)
+    
+    session.add(db_gatito)
+    session.commit()
+    session.refresh(db_gatito)
+    return db_gatito
+
+# 4. ELIMINAR un gatito (Si hubo un error o retiro del santuario)
+@app.delete("/gatitos/{gatito_id}")
+def delete_gatito(gatito_id: int, session: Session = Depends(get_session)):
+    db_gatito = session.get(Gatito, gatito_id)
+    if not db_gatito:
+        raise HTTPException(status_code=404, detail="Gatito no encontrado 😿")
+    
+    session.delete(db_gatito)
+    session.commit()
+    return {"mensaje": f"El registro de {db_gatito.nombre} ha sido eliminado correctamente"}
+    
 #CRUD de donations
 
 @app.post("/donations/")
